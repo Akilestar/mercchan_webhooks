@@ -7,25 +7,14 @@ const repoDir = process.env.repoDir;
 const appPort = process.env.appPort;
 
 app.use(express.json());
-let repo = '';
+
+//Github Payload
 app.post('/payload', async (request, response) => {
   response.send('POST Request');
 
   //GitHub Post
   const repo = request.body.repository.name;
   const resURL = request.body.repository.url;
-
-  //Custom Command Post
-  let instruction = '';
-  if (!request.body.instruction === 'undefined') {
-    instruction = request.body.instruction;
-  } else {
-    instruction = false;
-  }
-  const cli = request.body.cli;
-  const action = request.body.action;
-  const processName = request.body.processName;
-
   console.log(`POST from ${resURL}`);
 
   if (repo === repoName) {
@@ -49,13 +38,21 @@ app.post('/payload', async (request, response) => {
       console.log('Error: Unable to execute git');
     }
   }
+});
+//Custom Command POST Request
+app.post('/command', async (request, response) => {
+  response.send('POST Request');
+  console.log(request.body.cli.toString());
 
-  if (instruction) {
-    try {
-      exec(`${cli} ${action} ${processName}`, execCallback);
-    } catch {
-      console.log('Error: Unable to execute command');
-    }
+  try {
+    const cli = request.body.cli.toString();
+    const action = request.body.action.toString();
+    const processName = request.body.processName.toString();
+    const output = `${cli} ${action} ${processName}`;
+    console.log(`Executing ${output}`);
+    exec(output, execCallback);
+  } catch {
+    console.log('Error: Unable to execute command');
   }
 });
 
